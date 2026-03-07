@@ -73,6 +73,7 @@ from dataforge.analyzer import (
 from dataforge.validator import (
     SQLValidator,
     validate_insert_sql,
+    validate_sql,
 )
 
 # 便捷别名
@@ -116,4 +117,5 @@ __all__ = [
     "Validator",
     "SQLValidator",
     "validate_insert_sql",
+    "validate_sql",
 ]

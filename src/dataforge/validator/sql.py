@@ -92,7 +92,7 @@ class SQLValidator:
             'LISTAGG', 'XMLAGG', 'XMLELEMENT', 'JSON_ARRAY', 'JSON_OBJECT',
         })
     
-    def validate(self, sql: str, context: dict = None) -> List[SQLIssue]:
+    def validate(self, sql: str, context: dict = None) -> dict:
         """
         验证 SQL 代码质量
         
@@ -101,7 +101,22 @@ class SQLValidator:
             context: 上下文信息（表名、组名等）
         
         Returns:
-            问题列表
+            {
+                "has_errors": bool,          # 是否有错误
+                "has_warnings": bool,        # 是否有警告
+                "issues": [                  # 问题列表
+                    {
+                        "severity": str,
+                        "category": str,
+                        "line_number": int,
+                        "problem": str,
+                        "suggestion": str,
+                        ...
+                    }
+                ],
+                "error_count": int,           # 错误数量
+                "warning_count": int,         # 警告数量
+            }
         """
         self.issues = []
         context = context or {}
@@ -144,6 +159,33 @@ class SQLValidator:
         # 12. 检查 ORDER BY 在子查询中的使用
         self._check_order_by_in_subquery(lines)
         
+        # 统计错误和警告
+        error_count = sum(1 for i in self.issues if i.severity == IssueSeverity.CRITICAL)
+        warning_count = sum(1 for i in self.issues if i.severity == IssueSeverity.WARNING)
+        info_count = sum(1 for i in self.issues if i.severity == IssueSeverity.INFO)
+        
+        return {
+            "has_errors": error_count > 0,
+            "has_warnings": warning_count > 0,
+            "issues": [issue.to_dict() for issue in self.issues],
+            "error_count": error_count,
+            "warning_count": warning_count,
+            "info_count": info_count,
+            "total_issues": len(self.issues),
+        }
+    
+    def validate_list(self, sql: str, context: dict = None) -> List[SQLIssue]:
+        """
+        验证 SQL 并返回问题列表（向后兼容）
+        
+        Args:
+            sql: SQL 代码字符串
+            context: 上下文信息
+            
+        Returns:
+            SQLIssue 对象列表
+        """
+        self.validate(sql, context)
         return self.issues
     
     def _check_string_literals(self, lines: List[str]):
@@ -1041,3 +1083,18 @@ def validate_from_clause(from_clause: str, context: dict = None) -> Dict:
         "critical": sum(1 for i in issues if i["severity"] == "critical"),
         "warning": sum(1 for i in issues if i["severity"] == "warning"),
     }
+
+
+def validate_sql(sql: str, context: dict = None) -> Dict:
+    """
+    便捷函数：验证 SQL 代码
+    
+    Args:
+        sql: SQL 代码字符串
+        context: 上下文信息
+        
+    Returns:
+        验证报告字典
+    """
+    validator = SQLValidator()
+    return validator.validate(sql, context)

@@ -18,6 +18,7 @@ from dataforge.validator.sql import (
     validate_procedure_sql,
     validate_sql_expression,
     validate_from_clause,
+    validate_sql,
 )
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "validate_procedure_sql",
     "validate_sql_expression",
     "validate_from_clause",
+    "validate_sql",
 ]

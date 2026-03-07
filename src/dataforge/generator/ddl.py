@@ -197,7 +197,7 @@ class DDLGenerator:
 def extract_ddl_from_excel(
     file_path: str,
     only_tables: List[str] = None,
-    filter_column: str = "昆仑银行",
+    filter_column: str = "启用标记",
     filter_value: str = "1",
 ) -> List[TableDDL]:
     """
@@ -303,7 +303,7 @@ def extract_ddl_from_excel(
 
 
 # 支持的数据库列表
-SUPPORTED_DIALECTS = ["oracle", "mysql", "postgresql", "hive", "inceptor"]
+SUPPORTED_DIALECTS = ["oracle", "mysql", "postgresql", "hive", "inceptor", "oceanbase"]
 
 
 def extract_ddl_from_table_list(
@@ -453,5 +453,6 @@ def get_dialect_display_name(dialect: str) -> str:
         "postgresql": "PostgreSQL",
         "hive": "Apache Hive",
         "inceptor": "星环 Inceptor",
+        "oceanbase": "OceanBase",
     }
     return names.get(dialect.lower(), dialect)

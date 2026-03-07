@@ -18,6 +18,11 @@ from dataforge.parser.excel import (
 from dataforge.parser.rule_engine import (
     normalize_mapping_rule,
     RuleEngine,
+    MappingRuleEngine,
+    RuleContext,
+    RuleResult,
+    apply_rule,
+    get_rule_engine,
 )
 
 __all__ = [
@@ -26,4 +31,9 @@ __all__ = [
     "ExcelParser",
     "normalize_mapping_rule",
     "RuleEngine",
+    "MappingRuleEngine",
+    "RuleContext",
+    "RuleResult",
+    "apply_rule",
+    "get_rule_engine",
 ]

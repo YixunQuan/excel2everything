@@ -250,3 +250,40 @@ def get_rule_engine(config: Optional[MappingRuleConfig] = None) -> MappingRuleEn
 def apply_rule(rule_text: str, context: Optional[RuleContext] = None) -> RuleResult:
     """便捷函数：应用规则"""
     return get_rule_engine().apply(rule_text, context)
+
+
+def normalize_mapping_rule(
+    rule: str,
+    source_table: str = "",
+    source_field: str = "",
+    alias: str = "",
+    target_field: str = "",
+) -> Tuple[str, str, str]:
+    """
+    标准化映射规则文本
+    
+    将 Excel 中的映射规则文本转换为 SQL 表达式。
+    
+    Args:
+        rule: 原始映射规则文本
+        source_table: 源表名
+        source_field: 源字段名
+        alias: 表别名
+        target_field: 目标字段名
+        
+    Returns:
+        (sql_expr, comment, warning) 元组
+    """
+    context = RuleContext(
+        source_table=source_table,
+        source_field=source_field,
+        alias=alias,
+        target_field=target_field,
+        raw_rule=rule,
+    )
+    result = apply_rule(rule, context)
+    return result.expr, result.comment, result.warning
+
+
+# 别名
+RuleEngine = MappingRuleEngine

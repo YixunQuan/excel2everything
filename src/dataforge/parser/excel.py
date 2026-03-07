@@ -300,7 +300,8 @@ def _count_groups(col_groups: Dict[str, List[str]]) -> int:
 def extract_from_excel(
     file_path: str,
     only_tables: List[str] = None,
-    filter_kunlun: bool = True,
+    filter_enabled: bool = True,
+    filter_column: str = "启用标记",
 ) -> List[TableModel]:
     """
     从 Excel 文件中提取所有表的映射模型。
@@ -308,7 +309,7 @@ def extract_from_excel(
     Args:
         file_path:     Excel 文件路径
         only_tables:   只处理的表英文名列表（None = 全部）
-        filter_kunlun: 是否只处理"昆仑银行"列标记为 1 的行
+        filter_enabled: 是否启用过滤（只处理启用标记列为 1 的行）
 
     Returns:
         List[TableModel] — 结构化的映射模型列表
@@ -354,9 +355,9 @@ def extract_from_excel(
         df = df.dropna(how="all")
         df.columns = [str(c).strip() for c in df.columns]
 
-        # 根据"昆仑银行"列过滤：只处理标记为 1 的行
-        if filter_kunlun and "昆仑银行" in df.columns:
-            df = df[df["昆仑银行"].astype(str).str.strip() == "1"]
+        # 根据启用标记列过滤：只处理标记为 1 的行
+        if filter_enabled and filter_column in df.columns:
+            df = df[df[filter_column].astype(str).str.strip() == "1"]
 
         if df.empty:
             continue
@@ -530,3 +531,111 @@ def extract_from_excel(
             ))
 
     return result
+
+
+def detect_excel_format(file_path: str) -> dict:
+    """
+    检测 Excel 文件格式
+    
+    Args:
+        file_path: Excel 文件路径
+        
+    Returns:
+        {
+            "format": "regulatory" | "unknown",
+            "has_catalog": bool,
+            "sheet_count": int,
+        }
+    """
+    engine = "xlrd" if file_path.lower().endswith(".xls") else "openpyxl"
+    try:
+        xls = pd.ExcelFile(file_path, engine=engine)
+        sheets = xls.sheet_names
+        
+        # 检测是否有目录表
+        has_catalog = "目录" in sheets
+        
+        # 检测格式
+        if has_catalog:
+            return {
+                "format": "regulatory",
+                "has_catalog": True,
+                "sheet_count": len(sheets),
+            }
+        else:
+            return {
+                "format": "unknown",
+                "has_catalog": False,
+                "sheet_count": len(sheets),
+            }
+    except Exception as e:
+        return {
+            "format": "error",
+            "has_catalog": False,
+            "sheet_count": 0,
+            "error": str(e),
+        }
+
+
+class ExcelParser:
+    """Excel 解析器
+    
+    用于解析监管数据模型 Excel 文件，提取表结构、字段映射规则等信息。
+    
+    Example:
+        >>> from dataforge import Parser
+        >>> parser = Parser(format="regulatory")
+        >>> model = parser.parse("model.xlsx")
+        >>> print(f"表名: {model.table_name}")
+    """
+    
+    def __init__(self, format: str = "regulatory"):
+        """
+        初始化解析器
+        
+        Args:
+            format: Excel 格式类型，目前支持 "regulatory"
+        """
+        self.format = format
+    
+    def parse(self, file_path: str, only_tables: List[str] = None) -> List[TableModel]:
+        """
+        解析 Excel 文件
+        
+        Args:
+            file_path: Excel 文件路径
+            only_tables: 只处理的表名列表（可选）
+            
+        Returns:
+            List[TableModel] 解析后的表模型列表
+        """
+        if self.format != "regulatory":
+            raise ValueError(f"不支持的格式: {self.format}")
+        
+        return extract_from_excel(file_path, only_tables=only_tables)
+    
+    def parse_single(self, file_path: str, table_name: str) -> Optional[TableModel]:
+        """
+        解析单个表
+        
+        Args:
+            file_path: Excel 文件路径
+            table_name: 表英文名
+            
+        Returns:
+            TableModel 或 None
+        """
+        results = self.parse(file_path, only_tables=[table_name])
+        return results[0] if results else None
+    
+    def detect_format(self, file_path: str) -> dict:
+        """
+        检测 Excel 文件格式
+        
+        Args:
+            file_path: Excel 文件路径
+            
+        Returns:
+            格式信息字典
+        """
+        return detect_excel_format(file_path)

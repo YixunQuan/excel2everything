@@ -369,3 +369,68 @@ def build_summary_stats(deps: Dict[str, TableDependency]) -> dict:
         "most_shared_source": {"name": most_shared_source[0], "count": most_shared_source[1]},
         "avg_sources_per_table": round(total_refs / max(len(deps), 1), 1),
     }
+
+
+class DependencyAnalyzer:
+    """依赖分析器
+    
+    分析数据模型中的表依赖关系、字段依赖关系。
+    
+    Example:
+        >>> from dataforge import Analyzer
+        >>> analyzer = Analyzer()
+        >>> deps = analyzer.analyze(model)
+        >>> print(f"源表列表: {deps.all_source_tables}")
+    """
+    
+    def __init__(self):
+        """初始化依赖分析器"""
+        pass
+    
+    def analyze(self, model: TableModel) -> TableDependency:
+        """
+        分析单个表模型的依赖关系
+        
+        Args:
+            model: 表模型数据
+            
+        Returns:
+            TableDependency 依赖分析结果
+        """
+        return analyze_table(model)
+    
+    def analyze_all(self, models: List[TableModel]) -> Dict[str, TableDependency]:
+        """
+        批量分析所有表模型的依赖关系
+        
+        Args:
+            models: 表模型列表
+            
+        Returns:
+            {table_name: TableDependency} 字典
+        """
+        return analyze_all(models)
+    
+    def build_reverse_index(self, deps: Dict[str, TableDependency]) -> Dict[str, List[dict]]:
+        """
+        构建反向索引: 源表 → 被哪些 M 表引用
+        
+        Args:
+            deps: 依赖分析结果
+            
+        Returns:
+            {source_table: [引用信息列表]} 字典
+        """
+        return build_reverse_index(deps)
+    
+    def build_summary(self, deps: Dict[str, TableDependency]) -> dict:
+        """
+        构建全局统计摘要
+        
+        Args:
+            deps: 依赖分析结果
+            
+        Returns:
+            统计摘要字典
+        """
+        return build_summary_stats(deps)

@@ -590,3 +590,181 @@ def render_all(models: list, template_name: str = "inceptor", add_data_dt: bool 
         }
 
     return results
+
+
+class SQLGenerator:
+    """SQL 生成器
+    
+    支持从数据模型生成 INSERT SQL 和存储过程。
+    
+    Example:
+        >>> from dataforge import Generator
+        >>> generator = Generator(dialect="oracle")
+        >>> sql = generator.generate_procedure(model)
+    """
+    
+    SUPPORTED_DIALECTS = ["oracle", "mysql", "postgresql", "hive", "inceptor", "oceanbase"]
+    
+    def __init__(self, dialect: str = "oceanbase", template_dir: str = None):
+        """
+        初始化 SQL 生成器
+        
+        Args:
+            dialect: 数据库方言 (oracle/mysql/postgresql/hive/inceptor/oceanbase)
+            template_dir: 自定义模板目录路径（可选）
+        """
+        self.dialect = dialect.lower()
+        
+        if template_dir:
+            # 使用自定义模板目录
+            self.template_dir = template_dir
+        else:
+            # 使用内置模板目录
+            self.template_dir = os.path.join(TEMPLATES_DIR, self.dialect)
+        
+        if not os.path.exists(self.template_dir):
+            raise ValueError(f"不支持的数据库方言或模板目录不存在: {dialect}")
+        
+        self.env = Environment(
+            loader=FileSystemLoader(self.template_dir),
+            autoescape=select_autoescape([]),
+            keep_trailing_newline=True,
+            trim_blocks=False,
+            lstrip_blocks=False,
+        )
+    
+    def generate_insert(self, group: MappingGroup, model: TableModel, add_data_dt: bool = False) -> str:
+        """
+        生成单个映射组的 INSERT SQL
+        
+        Args:
+            group: 映射组数据
+            model: 表模型数据
+            add_data_dt: 是否为 LEFT JOIN 添加 DATA_DT 条件
+            
+        Returns:
+            INSERT SQL 语句
+        """
+        # 处理码值映射表达式
+        processed_group = _process_code_mapping_expressions(group)
+        
+        # 清洗 FROM 子句中的常见 SQL 语法错误
+        if processed_group.from_clause:
+            processed_group.from_clause = _clean_common_sql_errors(processed_group.from_clause)
+        
+        # 清洗字段表达式中的常见 SQL 语法错误
+        for field in processed_group.fields:
+            if field.expr:
+                field.expr = _clean_common_sql_errors(field.expr)
+        
+        # 生成码值映射的 LEFT JOIN
+        code_mapping_joins = _generate_code_mapping_joins(processed_group)
+        
+        # 将 JOIN 插入到 FROM 子句
+        if code_mapping_joins:
+            processed_group.from_clause = _insert_joins_into_from_clause(
+                processed_group.from_clause, code_mapping_joins
+            )
+        
+        # 确保分号添加在正确的位置
+        processed_group.from_clause = _ensure_semicolon_on_new_line(processed_group.from_clause)
+        
+        # 计算有效性信息
+        validity = is_valid_mapping_group(processed_group)
+        
+        # 渲染模板
+        template = self.env.get_template("insert.sql.j2")
+        return template.render(model=model, group=processed_group, validity=validity)
+    
+    def generate_procedure(self, model: TableModel, add_data_dt: bool = False) -> str:
+        """
+        生成完整的存储过程
+        
+        Args:
+            model: 表模型数据
+            add_data_dt: 是否为 LEFT JOIN 添加 DATA_DT 条件
+            
+        Returns:
+            存储过程 SQL 语句
+        """
+        template = self.env.get_template("procedure.sql.j2")
+        
+        # 先渲染每个组的 INSERT SQL，并计算有效性
+        insert_sqls = []
+        for g in model.groups:
+            validity = is_valid_mapping_group(g)
+            sql = self.generate_insert(g, model, add_data_dt=add_data_dt)
+            insert_sqls.append({
+                "group": g,
+                "sql": sql,
+                "is_valid": validity["is_valid"],
+                "validity": validity,
+            })
+        
+        return template.render(model=model, insert_sqls=insert_sqls)
+    
+    def generate_all(self, models: list, add_data_dt: bool = False) -> Dict[str, Dict]:
+        """
+        批量生成所有表模型的 SQL
+        
+        Args:
+            models: 表模型列表
+            add_data_dt: 是否为 LEFT JOIN 添加 DATA_DT 条件
+            
+        Returns:
+            {
+                "M_TABLE_NAME": {
+                    "procedure": "CREATE OR REPLACE ...",
+                    "inserts": [{"group_name": "...", "sql": "INSERT INTO ...", ...}],
+                    "warnings": [...],
+                    "invalid_groups": [...],
+                    "has_invalid_groups": bool,
+                },
+                ...
+            }
+        """
+        results = {}
+        for model in models:
+            inserts = []
+            invalid_groups = []
+            valid_count = 0
+            
+            for g in model.groups:
+                validity = is_valid_mapping_group(g)
+                sql = self.generate_insert(g, model, add_data_dt=add_data_dt)
+                
+                insert_item = {
+                    "group_name": g.name or f"组{g.group_index + 1}",
+                    "group_index": g.group_index,
+                    "sql": sql,
+                    "is_valid": validity["is_valid"],
+                    "validity": validity,
+                    "fields_count": len(g.fields) if g.fields else 0,
+                }
+                inserts.append(insert_item)
+                
+                if not validity["is_valid"]:
+                    invalid_groups.append({
+                        "group_index": g.group_index,
+                        "group_name": g.name or f"组{g.group_index + 1}",
+                        "from_clause": g.from_clause,
+                        "reasons": validity["reasons"],
+                    })
+                else:
+                    valid_count += 1
+            
+            procedure = self.generate_procedure(model, add_data_dt=add_data_dt)
+            
+            results[model.table_name] = {
+                "table_label": model.table_label,
+                "procedure": procedure,
+                "inserts": inserts,
+                "total_fields": model.total_fields,
+                "total_groups": len(model.groups),
+                "valid_groups": valid_count,
+                "invalid_groups": invalid_groups,
+                "has_invalid_groups": len(invalid_groups) > 0,
+                "warnings": model.warnings,
+            }
+        
+        return results

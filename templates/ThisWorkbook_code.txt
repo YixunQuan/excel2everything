@@ -1,0 +1,43 @@
+
+' ============================================
+' ThisWorkbook 模块代码
+' 工作簿打开时自动创建目录页按钮
+' ============================================
+
+Private Sub Workbook_Open()
+    CreateCatalogButtons
+End Sub
+
+Private Sub CreateCatalogButtons()
+    Dim ws As Worksheet
+    Dim btn As Button
+    
+    On Error Resume Next
+    Set ws = ThisWorkbook.Sheets("目录")
+    If ws Is Nothing Then Exit Sub
+    
+    ' 删除已有按钮
+    ws.Buttons.Delete
+    
+    ' 创建"生成表工作表"按钮
+    Set btn = ws.Buttons.Add(10, 70, 150, 30)
+    With btn
+        .Caption = "生成表工作表"
+        .OnAction = "GenerateTableSheets"
+        .Font.Size = 12
+        .Font.Bold = True
+    End With
+    
+    ' 创建"删除所有表"按钮
+    Set btn = ws.Buttons.Add(170, 70, 150, 30)
+    With btn
+        .Caption = "删除所有表"
+        .OnAction = "DeleteAllTableSheets"
+        .Font.Size = 12
+        .Font.Bold = True
+    End With
+    
+    ' 清除占位符文本
+    ws.Cells(5, 1).ClearContents
+    ws.Cells(5, 2).ClearContents
+End Sub
