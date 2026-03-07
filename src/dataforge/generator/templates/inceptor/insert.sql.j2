@@ -1,0 +1,16 @@
+{# insert.sql.j2 — 单组 INSERT INTO ... SELECT ... SQL #}
+-- ============================================================
+-- 表: {{ model.table_label }} ({{ model.table_name }})
+-- 映射组: {{ group.group_index + 1 }}{% if group.name %} - {{ group.name }}{% endif %}
+-- ============================================================
+
+INSERT INTO {{ model.table_name }} (
+{%- for f in group.fields %}
+    {{ f.target }}{{ "," if not loop.last else "" }}  -- {{ f.target_label }}
+{%- endfor %}
+)
+SELECT
+{%- for f in group.fields %}
+    {{ f.expr }} AS {{ f.target }}{{ "," if not loop.last else "" }}{% if f.comment %}  {{ f.comment }}{% endif %}
+{%- endfor %}
+FROM {{ group.from_clause }};

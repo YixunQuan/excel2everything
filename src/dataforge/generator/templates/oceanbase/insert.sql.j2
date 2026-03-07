@@ -1,0 +1,37 @@
+{# insert.sql.j2 — OceanBase Oracle 单组 INSERT INTO ... SELECT ... SQL #}
+-- ============================================================
+-- 表: {{ model.table_label }} ({{ model.table_name }})
+-- 映射组: {{ group.group_index + 1 }}{% if group.name %} - {{ group.name }}{% endif %}
+-- OceanBase Oracle 4.3.2 Compatible
+-- ============================================================
+{%- if not validity.is_valid %}
+
+-- [警告] 此映射组无效，跳过生成 SQL
+-- 原因分析:
+{%- for reason in validity.reasons %}
+--   - {{ reason }}
+{%- endfor %}
+-- 
+-- 请在 Excel 中为此组补充映射规则:
+{%- if not validity.has_from %}
+--   1. 在"关联条件"列填写源表名称，如: F_TABLE_NAME T01
+{%- endif %}
+{%- if validity.has_fields and not validity.has_valid_data %}
+--   2. 为字段添加实际的源字段映射，而非 NULL
+{%- endif %}
+{%- if not validity.has_fields %}
+--   1. 添加字段映射规则
+{%- endif %}
+{%- else %}
+
+INSERT INTO {{ model.table_name }} (
+{%- for f in group.fields %}
+    {{ f.target }}{{ "," if not loop.last else "" }}  -- {{ f.target_label }}
+{%- endfor %}
+)
+SELECT
+{%- for f in group.fields %}
+    {{ f.expr }} AS {{ f.target }}{{ "," if not loop.last else "" }}{% if f.comment %}  {{ f.comment }}{% endif %}
+{%- endfor %}
+FROM {{ group.from_clause }}
+{%- endif %}

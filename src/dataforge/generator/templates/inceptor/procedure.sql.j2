@@ -1,0 +1,131 @@
+{# procedure.sql.j2 — 完整 ETL 存储过程模板 #}
+CREATE OR REPLACE PROCEDURE ETL_{{ model.table_name }} (I_DATADATE IN INTEGER, -- 跑批日期
+                                       O_ERRCODE  OUT CHAR -- 错误代码
+                                       )
+/***********************************************************************
+  ************************************************************************
+    **  存储过程详细说明: {{ model.table_name }}抽数
+    **  存储过程名称: ETL_{{ model.table_name }}
+    **  存储过程创建日期: 
+    **  存储过程创建人: 
+    **  版本号: 
+    **  调用方法:
+         DECLARE
+           I_DATADATE INTEGER;
+           O_ERRCODE  CHAR(1);
+         BEGIN
+           I_DATADATE := '20250930';
+           ETL_{{ model.table_name }}(I_DATADATE, O_ERRCODE);
+         END;
+    **  输入参数:   I_DATADATE
+    **  输出参数:   O_ERRCODE
+    **  修改记录：  序号          修改日期          修改人          修改原因
+    **
+    ************************************************************************
+  ***********************************************************************/
+IS
+    -- -- **  变量定义  **-- -- 
+    V_DATE           DATE;           -- 数据日期(判断输入参数日期格式是否准确)
+    V_DATEID         CHAR(8);        -- 数据日期-八位
+    V_YEAR_START_DT  CHAR(8);        -- 年初-八位
+    V_MON_START_DT   CHAR(8);        -- 月初-八位
+    V_MON_END_DT     CHAR(8);        -- 月末-八位
+    V_QUA_START_DT   CHAR(8);        -- 季初-八位
+    V_QUA_END_DT     CHAR(8);        -- 季末-八位
+    V_DATA_DT        VARCHAR2(10);   -- 数据日期-十位
+    V_START_DATE     DATE;           -- 跑批开始时间
+    V_END_DATE       DATE;           -- 跑批结束时间
+    V_YEARID         CHAR(4);        -- 本年
+    V_SCHEMA_NAME    VARCHAR2(100);  -- SCHEMA
+    V_PROC_NAME      VARCHAR2(100);  -- 存储过程名称
+    V_TABLE_NAME     VARCHAR2(100);  -- 表名称
+    V_PARTITION_NAME VARCHAR2(100);  -- 分区名称
+    V_STEP_ID        INTEGER;        -- 任务号
+    V_STEP_DESC      VARCHAR2(1000); -- 任务描述
+    V_STAT_DESC      VARCHAR2(20);   -- 跑批状态
+    V_COUNT          INTEGER;        -- 数据记录条数
+    V_SQL            VARCHAR2(4000); -- 动态SQL语句
+BEGIN
+    -- -**  变量赋值  **-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
+    -- OceanBase Oracle模式: INTEGER参数需先转字符串再处理
+    V_DATEID         := TO_CHAR(I_DATADATE);
+    -- 确保日期为8位，不足前面补0
+    V_DATEID         := LPAD(V_DATEID, 8, '0');
+    V_DATE           := TO_DATE(V_DATEID, 'YYYYMMDD');
+    V_YEAR_START_DT  := SUBSTR(V_DATEID, 1, 4) || '0101';
+    V_MON_START_DT   := SUBSTR(V_DATEID, 1, 6) || '01';
+    V_MON_END_DT     := TO_CHAR(LAST_DAY(V_DATE),'YYYYMMDD');
+    V_QUA_START_DT   := TO_CHAR(TRUNC(V_DATE,'Q'),'YYYYMMDD');
+    V_QUA_END_DT     := TO_CHAR(ADD_MONTHS(TRUNC(V_DATE,'Q'),3)-1,'YYYYMMDD');
+    V_DATA_DT        := TO_CHAR(V_DATE, 'YYYY-MM-DD');
+    V_START_DATE     := SYSDATE;
+    V_YEARID         := SUBSTR(V_DATEID, 1, 4);
+    V_SCHEMA_NAME    := UPPER('SPS_ETL');
+    V_PROC_NAME      := UPPER('ETL_{{ model.table_name }}');
+    V_TABLE_NAME     := UPPER('{{ model.table_name }}');
+    V_PARTITION_NAME := 'PARTITION_' || V_DATEID;
+    V_STEP_ID        := 0;
+    V_STAT_DESC      := '跑批正确';
+    V_COUNT          := 0;
+    O_ERRCODE        := '0';
+-- ** 清除目标表数据 **-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+    V_START_DATE := SYSDATE;
+    V_STEP_ID    := 1;
+    V_STEP_DESC  := '清除目标表数据';
+    -- 清除目标表分区数据 (OceanBase Oracle 4.3.2)
+    V_SQL := 'ALTER TABLE {{ model.table_name }} TRUNCATE PARTITION P_' || V_DATEID;
+    EXECUTE IMMEDIATE V_SQL;
+	  V_COUNT := 0;
+	  COMMIT;
+    -- 记录正常日志
+    V_END_DATE := SYSDATE;
+    ETL_YUSYS_LOG(V_DATEID,
+                  V_START_DATE,
+                  V_END_DATE,
+                  V_PROC_NAME,
+                  V_STEP_ID,
+                  V_STEP_DESC,
+                  V_STAT_DESC,
+                  V_COUNT);
+{% for item in insert_sqls %}
+-- -- ** ETL加工 {{ loop.index }} **-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+    V_START_DATE := SYSDATE;
+    V_STEP_ID    := {{ loop.index + 1 }};
+    V_STEP_DESC  := 'ETL加工-步骤{{ loop.index + 1 }}';
+    -- 执行INSERT语句 -- 
+{{ item.sql | indent(4, true) }}
+    -- 统计数据记录 -- 
+    V_COUNT := SQL%ROWCOUNT;
+    -- 提交事务 -- 
+    COMMIT;
+    -- 记录正常日志
+    V_END_DATE := SYSDATE;
+    ETL_YUSYS_LOG(V_DATEID,
+                  V_START_DATE,
+                  V_END_DATE,
+                  V_PROC_NAME,
+                  V_STEP_ID,
+                  V_STEP_DESC,
+                  V_STAT_DESC,
+                  V_COUNT);
+{% endfor %}
+
+-- -- **  跑批异常信息日志记录  **-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+    EXCEPTION
+        WHEN OTHERS THEN
+            O_ERRCODE   := '1'; -- 将SQL错误编号赋植给O_ERRCODE
+            V_STEP_DESC := '发生异常！详细信息为： ' || SUBSTR(SQLERRM, 1, 280);
+            V_END_DATE  := SYSDATE;
+            V_COUNT     := SQL%ROWCOUNT;
+            V_STAT_DESC := '跑批异常';
+    -- 记录异常信息
+    ETL_YUSYS_LOG(V_DATEID,
+                  V_START_DATE,
+                  V_END_DATE,
+                  V_PROC_NAME,
+                  V_STEP_ID,
+                  V_STEP_DESC,
+                  V_STAT_DESC,
+                  V_COUNT);
+    RAISE;
+END ETL_{{ model.table_name }};
