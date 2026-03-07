@@ -24,7 +24,7 @@ Example:
     >>> from dataforge import Parser, Generator, Validator
     >>> 
     >>> # 解析 Excel
-    >>> parser = Parser(format="regulatory")
+    >>> parser = Parser(format="default")
     >>> model = parser.parse("model.xlsx")
     >>> 
     >>> # 生成 SQL

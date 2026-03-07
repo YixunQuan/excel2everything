@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Excel 解析器 — 从监管数据模型 Excel 文件中提取映射信息，转为 IR 模型。
+Excel 解析器 — 从数据模型 Excel 文件中提取映射信息，转为 IR 模型。
 
 这是一个「输入适配器」，未来可以添加 csv.py / yaml_loader.py 等其他适配器，
 只要输出统一的 List[TableModel] 即可。
@@ -542,7 +542,7 @@ def detect_excel_format(file_path: str) -> dict:
         
     Returns:
         {
-            "format": "regulatory" | "unknown",
+            "format": "default" | "unknown",
             "has_catalog": bool,
             "sheet_count": int,
         }
@@ -558,7 +558,7 @@ def detect_excel_format(file_path: str) -> dict:
         # 检测格式
         if has_catalog:
             return {
-                "format": "regulatory",
+                "format": "default",
                 "has_catalog": True,
                 "sheet_count": len(sheets),
             }
@@ -580,21 +580,21 @@ def detect_excel_format(file_path: str) -> dict:
 class ExcelParser:
     """Excel 解析器
     
-    用于解析监管数据模型 Excel 文件，提取表结构、字段映射规则等信息。
+    用于解析数据模型 Excel 文件，提取表结构、字段映射规则等信息。
     
     Example:
         >>> from dataforge import Parser
-        >>> parser = Parser(format="regulatory")
+        >>> parser = Parser(format="default")
         >>> model = parser.parse("model.xlsx")
         >>> print(f"表名: {model.table_name}")
     """
     
-    def __init__(self, format: str = "regulatory"):
+    def __init__(self, format: str = "default"):
         """
         初始化解析器
         
         Args:
-            format: Excel 格式类型，目前支持 "regulatory"
+            format: Excel 格式类型，目前支持 "default"
         """
         self.format = format
     
@@ -609,7 +609,7 @@ class ExcelParser:
         Returns:
             List[TableModel] 解析后的表模型列表
         """
-        if self.format != "regulatory":
+        if self.format not in ("default", "standard"):
             raise ValueError(f"不支持的格式: {self.format}")
         
         return extract_from_excel(file_path, only_tables=only_tables)

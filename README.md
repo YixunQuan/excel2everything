@@ -1,7 +1,7 @@
 # DataForge Core
 
 <p align="center">
-  <strong>Enterprise Data Development Toolkit - Core Engine</strong>
+  <strong>Data Model to SQL - Excel 驱动的 SQL 代码生成器</strong>
 </p>
 
 <p align="center">
@@ -20,13 +20,13 @@
 
 ## 概述 / Overview
 
-DataForge Core 是一个企业级数据开发工具链的核心引擎，用于将数据模型自动转换为可执行的 SQL 代码。
+DataForge Core 是一个数据模型转换工具，帮助业务人员在 Excel 中定义字段映射规则，自动生成可执行的 SQL 代码。
 
-DataForge Core is a core engine for enterprise data development toolchain, designed to automatically transform data models into executable SQL code.
+DataForge Core is a data model transformation tool that helps business users define field mapping rules in Excel and automatically generate executable SQL code.
 
 ### 核心功能 / Core Features
 
-- **Excel 解析 / Excel Parsing** - 智能解析监管数据模型 Excel 文件 / Intelligently parse regulatory data model Excel files
+- **Excel 解析 / Excel Parsing** - 智能解析数据模型 Excel 文件 / Intelligently parse data model Excel files
 - **SQL 生成 / SQL Generation** - 自动生成 INSERT SQL 和存储过程 / Automatically generate INSERT SQL and stored procedures
 - **DDL 生成 / DDL Generation** - 支持多种数据库方言的建表语句 / Support DDL statements for multiple database dialects
 - **依赖分析 / Dependency Analysis** - 分析表级和字段级依赖关系 / Analyze table-level and field-level dependencies
@@ -51,7 +51,7 @@ pip install dataforge-core
 from dataforge import Parser
 
 # 创建解析器 / Create parser
-parser = Parser(format="regulatory")
+parser = Parser()
 
 # 解析 Excel 文件 / Parse Excel file
 model = parser.parse("path/to/model.xlsx")
@@ -125,16 +125,43 @@ if report["has_errors"]:
 
 ---
 
-## 支持的数据库 / Supported Databases
+## 数据库支持 / Database Support
 
-| 数据库 / Database | SQL 生成 / SQL Gen | DDL 生成 / DDL Gen | 模板路径 / Template Path |
-|--------|----------|----------|----------|
-| Oracle | ✅ | ✅ | `templates/oracle/` |
-| MySQL | ✅ | ✅ | `templates/mysql/` |
-| PostgreSQL | ✅ | ✅ | `templates/postgresql/` |
-| Hive | ✅ | ✅ | `templates/hive/` |
-| Inceptor (星环) | ✅ | ✅ | `templates/inceptor/` |
-| OceanBase | ✅ | ✅ | `templates/oceanbase/` |
+### DDL 生成支持 / DDL Generation Support
+
+DataForge 支持为以下数据库生成建表语句（DDL）：
+
+DataForge supports generating DDL statements for the following databases:
+
+| 数据库 / Database | 状态 / Status | 说明 / Description |
+|--------|----------|----------|
+| Oracle | ✅ 已支持 | 企业级数据库 / Enterprise database |
+| MySQL | ✅ 已支持 | 最流行的开源数据库 / Most popular open-source database |
+| PostgreSQL | ✅ 已支持 | 功能强大的开源数据库 / Powerful open-source database |
+| Hive | ✅ 已支持 | Hadoop 数据仓库 / Hadoop data warehouse |
+| Inceptor (星环) | ✅ 已支持 | 星环科技数据库 / Transwarp database |
+| OceanBase | ✅ 已支持 | 蚂蚁集团分布式数据库 / Ant Group distributed database |
+| **更多...** | 🚧 开发中 | 持续添加中 / Continuously adding |
+
+### SQL 生成支持 / SQL Generation Support
+
+INSERT SQL 和存储过程生成目前主要支持 Inceptor 和 OceanBase 方言，后续会扩展更多数据库。
+
+INSERT SQL and stored procedure generation currently mainly supports Inceptor and OceanBase dialects, with more databases to be added.
+
+### 添加新数据库 / Adding New Databases
+
+如果你想支持其他数据库，可以通过自定义模板实现：
+
+If you want to support other databases, you can do so via custom templates:
+
+```python
+from dataforge import DDLGenerator
+
+# 自定义数据库方言 / Custom database dialect
+# 只需在 templates/ 目录下创建对应的模板文件
+# Just create corresponding template files in templates/ directory
+```
 
 ---
 

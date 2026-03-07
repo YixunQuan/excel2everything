@@ -85,7 +85,7 @@ class MappingRuleConfig(BaseModel):
 
 class DefaultsConfig(BaseModel):
     """默认配置"""
-    excel_format: str = "regulatory"
+    excel_format: str = "default"
     mapping_rules: str = "default"
     database_dialect: str = "inceptor"
 

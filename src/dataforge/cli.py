@@ -44,12 +44,12 @@ def cmd_parse(args):
     print(f"📋 文件格式: {format_info['format']}")
     print(f"📊 工作表数量: {format_info['sheet_count']}")
     
-    if format_info['format'] != 'regulatory':
+    if format_info['format'] not in ('default', 'standard'):
         print(f"❌ 错误: 不支持的 Excel 格式")
         return 1
     
     # 解析
-    parser = Parser(format='regulatory')
+    parser = Parser(format='default')
     
     if args.table:
         models = parser.parse(excel_path, only_tables=[args.table])
@@ -95,7 +95,7 @@ def cmd_generate(args):
         return 1
     
     # 解析
-    parser = Parser(format='regulatory')
+    parser = Parser(format='default')
     models = parser.parse(excel_path)
     
     if not models:
@@ -182,7 +182,7 @@ def cmd_analyze(args):
         return 1
     
     # 解析
-    parser = Parser(format='regulatory')
+    parser = Parser(format='default')
     models = parser.parse(excel_path)
     
     if not models:
@@ -281,7 +281,7 @@ def cmd_info(args):
     for dialect in SUPPORTED_DIALECTS:
         print(f"   • {dialect.upper()}")
     print(f"\n📖 核心功能:")
-    print("   • Excel 解析 - 解析监管数据模型 Excel 文件")
+    print("   • Excel 解析 - 解析数据模型 Excel 文件")
     print("   • SQL 生成 - 生成 INSERT SQL 和存储过程")
     print("   • DDL 生成 - 生成建表语句")
     print("   • 依赖分析 - 分析表级和字段级依赖关系")

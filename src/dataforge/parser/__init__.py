@@ -6,7 +6,7 @@ DataForge Parser - Excel 解析器模块
 
 Example:
     >>> from dataforge.parser import ExcelParser
-    >>> parser = ExcelParser(format="regulatory")
+    >>> parser = ExcelParser(format="default")
     >>> model = parser.parse("model.xlsx")
 """
 
