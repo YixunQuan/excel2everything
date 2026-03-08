@@ -15,7 +15,7 @@ import re
 from typing import List, Dict, Optional, Tuple
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from dataforge.models import TableDDL, ColumnDefinition
+from excel2everything.models import TableDDL, ColumnDefinition
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 

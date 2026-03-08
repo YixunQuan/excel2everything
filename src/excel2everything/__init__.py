@@ -1,42 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-DataForge Core - 企业级数据开发工具链核心引擎
+Excel2Everything - 模板驱动的 Excel 转换工具
 
-DataForge 是一个数据开发工具链，用于将数据模型转换为可执行的 SQL 代码。
+核心思路：一次解析，无限输出
+    Excel → [Parser] → IR Model → [Template] → Anything
 
 核心功能:
-    - Excel 数据模型解析
-    - SQL 存储过程生成
-    - DDL 建表语句生成
-    - 表依赖关系分析
-    - SQL 语法验证
-    - 多数据库方言支持
+    - Excel 解析：提取表结构、字段映射规则
+    - 模板驱动：基于 Jinja2 自定义输出格式
+    - 内置模板：SQL、DDL、存储过程等
+    - 可扩展：添加新输出格式只需编写模板
 
-支持的数据库:
-    - Oracle
-    - MySQL
-    - PostgreSQL
-    - Hive
-    - Inceptor (星环)
-    - OceanBase
+内置支持:
+    - Oracle, MySQL, PostgreSQL, Hive, OceanBase
 
 Example:
-    >>> from dataforge import Parser, Generator, Validator
+    >>> from excel2everything import Parser, Generator
     >>> 
     >>> # 解析 Excel
-    >>> parser = Parser(format="default")
+    >>> parser = Parser()
     >>> model = parser.parse("model.xlsx")
     >>> 
-    >>> # 生成 SQL
+    >>> # 使用模板生成 SQL
     >>> generator = Generator(dialect="oracle")
     >>> sql = generator.generate_procedure(model)
-    >>> 
-    >>> # 验证 SQL
-    >>> validator = Validator()
-    >>> report = validator.validate(sql)
 
 版本历史:
-    0.1.0 - 初始版本，核心引擎重构
+    0.1.0 - 初始版本
 """
 
 __version__ = "0.1.0"
@@ -44,7 +34,7 @@ __author__ = "DataForge Team"
 __license__ = "MIT"
 
 # 导入主要组件
-from dataforge.models import (
+from excel2everything.models import (
     TableModel,
     FieldMapping,
     MappingGroup,
@@ -53,24 +43,24 @@ from dataforge.models import (
     ProjectConfig,
 )
 
-from dataforge.parser import (
+from excel2everything.parser import (
     ExcelParser,
     extract_from_excel,
     RuleEngine,
 )
 
-from dataforge.generator import (
+from excel2everything.generator import (
     SQLGenerator,
     DDLGenerator,
     SUPPORTED_DIALECTS,
 )
 
-from dataforge.analyzer import (
+from excel2everything.analyzer import (
     DependencyAnalyzer,
     analyze_all,
 )
 
-from dataforge.validator import (
+from excel2everything.validator import (
     SQLValidator,
     validate_insert_sql,
     validate_sql,

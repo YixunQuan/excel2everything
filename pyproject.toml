@@ -3,27 +3,28 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dataforge-core"
+name = "excel2everything"
 version = "0.1.0"
-description = "DataForge Core - Enterprise Data Development Toolkit Engine"
+description = "Excel2Everything - Parse Excel and transform to any format with templates"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 authors = [
-    {name = "DataForge Team", email = "contact@dataforge.dev"}
+    {name = "Excel2Everything", email = "contact@excel2everything.dev"}
 ]
 maintainers = [
-    {name = "DataForge Team", email = "contact@dataforge.dev"}
+    {name = "Excel2Everything", email = "contact@excel2everything.dev"}
 ]
 keywords = [
-    "data",
-    "etl",
-    "sql",
     "excel",
-    "generator",
+    "template",
+    "code-generator",
+    "sql",
     "ddl",
+    "etl",
     "data-model",
-    "data-pipeline",
+    "jinja2",
+    "transformation",
     "oracle",
     "mysql",
     "postgresql",
@@ -72,14 +73,13 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://dataforge.dev"
-Documentation = "https://docs.dataforge.dev"
-Repository = "https://github.com/dataforge/dataforge-core"
-Issues = "https://github.com/dataforge/dataforge-core/issues"
-Changelog = "https://github.com/dataforge/dataforge-core/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/excel2everything/excel2everything"
+Documentation = "https://github.com/excel2everything/excel2everything#readme"
+Repository = "https://github.com/excel2everything/excel2everything"
+Issues = "https://github.com/excel2everything/excel2everything/issues"
 
 [project.scripts]
-dataforge = "dataforge.cli:main"
+excel2everything = "excel2everything.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -88,7 +88,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-dataforge = ["generator/templates/**/*", "config/defaults/**/*"]
+excel2everything = ["generator/templates/**/*", "config/defaults/**/*"]
 
 [tool.black]
 line-length = 100

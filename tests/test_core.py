@@ -13,13 +13,13 @@ class TestImport:
     
     def test_import_main_package(self):
         """测试主包导入"""
-        import dataforge
-        assert hasattr(dataforge, "__version__")
-        assert dataforge.__version__ == "0.1.0"
+        import excel2everything
+        assert hasattr(excel2everything, "__version__")
+        assert excel2everything.__version__ == "0.1.0"
     
     def test_import_models(self):
         """测试数据模型导入"""
-        from dataforge.models import (
+        from excel2everything.models import (
             TableModel,
             FieldMapping,
             MappingGroup,
@@ -31,30 +31,30 @@ class TestImport:
     
     def test_import_parser(self):
         """测试解析器导入"""
-        from dataforge.parser import ExcelParser, RuleEngine
+        from excel2everything.parser import ExcelParser, RuleEngine
         assert ExcelParser is not None
         assert RuleEngine is not None
     
     def test_import_generator(self):
         """测试生成器导入"""
-        from dataforge.generator import SQLGenerator, DDLGenerator, SUPPORTED_DIALECTS
+        from excel2everything.generator import SQLGenerator, DDLGenerator, SUPPORTED_DIALECTS
         assert SQLGenerator is not None
         assert DDLGenerator is not None
         assert len(SUPPORTED_DIALECTS) >= 5
     
     def test_import_analyzer(self):
         """测试分析器导入"""
-        from dataforge.analyzer import DependencyAnalyzer
+        from excel2everything.analyzer import DependencyAnalyzer
         assert DependencyAnalyzer is not None
     
     def test_import_validator(self):
         """测试验证器导入"""
-        from dataforge.validator import SQLValidator
+        from excel2everything.validator import SQLValidator
         assert SQLValidator is not None
     
     def test_import_aliases(self):
         """测试便捷别名"""
-        from dataforge import Parser, Generator, Validator, Analyzer
+        from excel2everything import Parser, Generator, Validator, Analyzer
         assert Parser is not None
         assert Generator is not None
         assert Validator is not None
@@ -66,7 +66,7 @@ class TestModels:
     
     def test_field_mapping(self):
         """测试字段映射模型"""
-        from dataforge.models import FieldMapping
+        from excel2everything.models import FieldMapping
         
         field = FieldMapping(
             target="CUST_ID",
@@ -82,7 +82,7 @@ class TestModels:
     
     def test_table_model(self):
         """测试表模型"""
-        from dataforge.models import TableModel, MappingGroup, FieldMapping
+        from excel2everything.models import TableModel, MappingGroup, FieldMapping
         
         field = FieldMapping(
             target="CUST_ID",
@@ -111,7 +111,7 @@ class TestValidator:
     
     def test_validate_simple_sql(self):
         """测试简单 SQL 验证"""
-        from dataforge.validator import SQLValidator
+        from excel2everything.validator import SQLValidator
         
         validator = SQLValidator()
         sql = "SELECT * FROM DUAL"
@@ -121,7 +121,7 @@ class TestValidator:
     
     def test_validate_string_literal_error(self):
         """测试字符串字面量错误检测"""
-        from dataforge.validator import SQLValidator, IssueSeverity
+        from excel2everything.validator import SQLValidator, IssueSeverity
         
         validator = SQLValidator()
         # 单引号不配对
@@ -138,7 +138,7 @@ class TestDDLGenerator:
     
     def test_supported_dialects(self):
         """测试支持的数据库方言"""
-        from dataforge.generator import SUPPORTED_DIALECTS
+        from excel2everything.generator import SUPPORTED_DIALECTS
         
         expected = ["oracle", "mysql", "postgresql", "hive", "inceptor"]
         for dialect in expected:
@@ -146,7 +146,7 @@ class TestDDLGenerator:
     
     def test_infer_data_type(self):
         """测试数据类型推断"""
-        from dataforge.generator.ddl import infer_data_type
+        from excel2everything.generator.ddl import infer_data_type
         
         # 日期类型
         assert "DATE" in infer_data_type("日期类")

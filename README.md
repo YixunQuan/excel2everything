@@ -1,14 +1,15 @@
-# DataForge Core
+# Excel2Everything
 
 <p align="center">
-  <strong>Data Model to SQL - Excel 驱动的 SQL 代码生成器</strong>
+  <strong>Parse Excel → Transform with Templates → Generate Anything</strong>
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/dataforge-core/">
-    <img src="https://img.shields.io/pypi/v/dataforge-core.svg" alt="PyPI version">
-  </a>
-  <a href="https://github.com/dataforge/dataforge-core/blob/main/LICENSE">
+  <strong>解析 Excel → 模板转换 → 生成任意格式</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/excel2everything/excel2everything/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
   </a>
   <a href="https://www.python.org/downloads/">
@@ -20,183 +21,159 @@
 
 ## 概述 / Overview
 
-DataForge Core 是一个数据模型转换工具，帮助业务人员在 Excel 中定义字段映射规则，自动生成可执行的 SQL 代码。
+**Excel2Everything** 是一个模板驱动的 Excel 转换工具。核心思路很简单：**一次解析，无限输出**。
 
-DataForge Core is a data model transformation tool that helps business users define field mapping rules in Excel and automatically generate executable SQL code.
+**Excel2Everything** is a template-driven Excel transformation tool. The core idea is simple: **Parse Once, Output Anything**.
 
-### 核心功能 / Core Features
+### 工作原理 / How It Works
 
-- **Excel 解析 / Excel Parsing** - 智能解析数据模型 Excel 文件 / Intelligently parse data model Excel files
-- **SQL 生成 / SQL Generation** - 自动生成 INSERT SQL 和存储过程 / Automatically generate INSERT SQL and stored procedures
-- **DDL 生成 / DDL Generation** - 支持多种数据库方言的建表语句 / Support DDL statements for multiple database dialects
-- **依赖分析 / Dependency Analysis** - 分析表级和字段级依赖关系 / Analyze table-level and field-level dependencies
-- **SQL 验证 / SQL Validation** - 内置语法检查和质量验证 / Built-in syntax checking and quality validation
-- **多数据库支持 / Multi-Database Support** - Oracle, MySQL, PostgreSQL, Hive, Inceptor, OceanBase
+```
+Excel 文件
+    ↓
+[解析器 Parser] → 中间表示 (IR) 模型
+    ↓
+[模板 Template] → Jinja2 渲染
+    ↓
+输出文件 (SQL / Python / JSON / ...)
+```
+
+### 核心特性 / Core Features
+
+- **Excel 解析 / Excel Parsing** - 解析数据模型 Excel，提取表结构、字段映射规则
+- **模板驱动 / Template-Driven** - 基于 Jinja2，自定义输出格式
+- **一次解析，多种输出 / Parse Once, Output Anything** - 同一 Excel 可生成 SQL、DDL、代码、文档等
+- **多数据库支持 / Multi-Database Support** - 内置 Oracle、MySQL、PostgreSQL、Hive、OceanBase 等模板
+- **可扩展 / Extensible** - 添加新输出格式只需编写模板，无需修改代码
 
 ---
 
 ## 安装 / Installation
 
+### 从源码安装 / Install from Source
+
 ```bash
-pip install dataforge-core
+# 克隆仓库 / Clone repository
+git clone https://github.com/excel2everything/excel2everything.git
+cd excel2everything
+
+# 安装 / Install
+pip install -e .
+```
+
+### 验证安装 / Verify Installation
+
+```bash
+excel2everything info
 ```
 
 ---
 
 ## 快速开始 / Quick Start
 
-### 解析 Excel 模型 / Parse Excel Model
+### 命令行使用 / CLI Usage
 
-```python
-from dataforge import Parser
+```bash
+# 解析 Excel / Parse Excel
+excel2everything parse model.xlsx --output ./output
 
-# 创建解析器 / Create parser
-parser = Parser()
+# 生成 SQL（使用内置模板）/ Generate SQL with built-in templates
+excel2everything generate model.xlsx --dialect oracle --output ./sql
 
-# 解析 Excel 文件 / Parse Excel file
-model = parser.parse("path/to/model.xlsx")
+# 生成 DDL / Generate DDL
+excel2everything ddl model.xlsx --dialect mysql --output ./ddl
 
-# 查看解析结果 / View parsing results
-print(f"表名 / Table name: {model.table_name}")
-print(f"表中文名 / Table label: {model.table_label}")
-print(f"字段数 / Field count: {model.total_fields}")
+# 分析依赖 / Analyze dependencies
+excel2everything analyze model.xlsx
 ```
 
-### 生成 SQL / Generate SQL
+### Python API
 
 ```python
-from dataforge import Generator
+from excel2everything import Parser, Generator
 
-# 创建生成器 / Create generator
+# 1. 解析 Excel → IR 模型 / Parse Excel to IR model
+parser = Parser()
+model = parser.parse("model.xlsx")
+
+# 2. 使用模板生成 SQL / Generate SQL with template
 generator = Generator(dialect="oracle")
-
-# 生成存储过程 / Generate stored procedure
 sql = generator.generate_procedure(model)
-
-# 输出结果 / Output result
 print(sql)
 ```
 
-### 生成 DDL / Generate DDL
+### 自定义模板 / Custom Templates
+
+只需创建 Jinja2 模板文件即可扩展输出格式：
+
+Just create a Jinja2 template file to extend output formats:
 
 ```python
-from dataforge import DDLGenerator
+from excel2everything import Parser
+from jinja2 import Environment, FileSystemLoader
 
-# 创建 DDL 生成器 / Create DDL generator
-ddl_gen = DDLGenerator(dialect="mysql")
+# 解析 Excel / Parse Excel
+parser = Parser()
+model = parser.parse("model.xlsx")
 
-# 生成建表语句 / Generate DDL statement
-ddl = ddl_gen.generate(table_ddl_model)
-
-print(ddl)
+# 自定义模板渲染 / Custom template rendering
+env = Environment(loader=FileSystemLoader("./templates"))
+template = env.get_template("my_output.py.j2")
+result = template.render(model=model)
 ```
 
-### 依赖分析 / Dependency Analysis
+模板示例 / Template example `my_output.py.j2`：
 
-```python
-from dataforge import Analyzer
+```jinja2
+# 自动生成: {{ model.table_name }}
+# {{ model.table_label }}
 
-# 创建分析器 / Create analyzer
-analyzer = Analyzer()
-
-# 分析依赖关系 / Analyze dependencies
-deps = analyzer.analyze(model)
-
-# 查看源表列表 / View source table list
-print(f"依赖源表 / Source tables: {deps.all_source_tables}")
-```
-
-### SQL 验证 / SQL Validation
-
-```python
-from dataforge import Validator
-
-# 创建验证器 / Create validator
-validator = Validator()
-
-# 验证 SQL / Validate SQL
-report = validator.validate(sql)
-
-if report["has_errors"]:
-    print("发现错误 / Errors found:")
-    for issue in report["issues"]:
-        print(f"  - {issue['problem']}: {issue['suggestion']}")
+class {{ model.table_name }}:
+    fields = [
+{%- for field in model.target_fields %}
+        "{{ field }}",
+{%- endfor %}
+    ]
 ```
 
 ---
 
-## 数据库支持 / Database Support
+## 内置模板 / Built-in Templates
 
-### DDL 生成支持 / DDL Generation Support
+### SQL 生成 / SQL Generation
 
-DataForge 支持为以下数据库生成建表语句（DDL）：
+| 输出类型 / Output Type | Oracle | MySQL | PostgreSQL | Hive | OceanBase |
+|------------------------|--------|-------|------------|------|----------|
+| DDL 建表语句 / DDL | ✅ | ✅ | ✅ | ✅ | ✅ |
+| INSERT SQL | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 存储过程 / Procedure | ✅ | - | - | ✅ | ✅ |
 
-DataForge supports generating DDL statements for the following databases:
+### 可扩展输出 / Extensible Outputs
 
-| 数据库 / Database | 状态 / Status | 说明 / Description |
-|--------|----------|----------|
-| Oracle | ✅ 已支持 | 企业级数据库 / Enterprise database |
-| MySQL | ✅ 已支持 | 最流行的开源数据库 / Most popular open-source database |
-| PostgreSQL | ✅ 已支持 | 功能强大的开源数据库 / Powerful open-source database |
-| Hive | ✅ 已支持 | Hadoop 数据仓库 / Hadoop data warehouse |
-| Inceptor (星环) | ✅ 已支持 | 星环科技数据库 / Transwarp database |
-| OceanBase | ✅ 已支持 | 蚂蚁集团分布式数据库 / Ant Group distributed database |
-| **更多...** | 🚧 开发中 | 持续添加中 / Continuously adding |
+通过自定义模板，你可以生成 / With custom templates, you can generate:
 
-### SQL 生成支持 / SQL Generation Support
-
-INSERT SQL 和存储过程生成目前主要支持 Inceptor 和 OceanBase 方言，后续会扩展更多数据库。
-
-INSERT SQL and stored procedure generation currently mainly supports Inceptor and OceanBase dialects, with more databases to be added.
-
-### 添加新数据库 / Adding New Databases
-
-如果你想支持其他数据库，可以通过自定义模板实现：
-
-If you want to support other databases, you can do so via custom templates:
-
-```python
-from dataforge import DDLGenerator
-
-# 自定义数据库方言 / Custom database dialect
-# 只需在 templates/ 目录下创建对应的模板文件
-# Just create corresponding template files in templates/ directory
-```
-
----
-
-## 自定义模板 / Custom Templates
-
-DataForge 使用 Jinja2 模板引擎，你可以自定义 SQL 生成模板：
-
-DataForge uses Jinja2 template engine, you can customize SQL generation templates:
-
-```python
-from dataforge import Generator
-
-# 使用自定义模板目录 / Use custom template directory
-generator = Generator(
-    dialect="oracle",
-    template_dir="/path/to/custom/templates"
-)
-```
+| 输出类型 / Output Type | 用途 / Usage | 示例模板 / Example Template |
+|------------------------|--------------|----------------------------|
+| Python 代码 / Python Code | Pandas ETL | `etl.py.j2` |
+| JSON Schema | 数据验证 / Validation | `schema.json.j2` |
+| Markdown 文档 / Markdown Doc | 表结构文档 / Table Doc | `doc.md.j2` |
+| YAML 配置 / YAML Config | 配置文件 / Config File | `config.yaml.j2` |
+| API 代码 / API Code | FastAPI 接口 | `api.py.j2` |
 
 ---
 
 ## 项目结构 / Project Structure
 
 ```
-dataforge-core/
+excel2everything/
 ├── src/dataforge/
-│   ├── parser/        # Excel 解析器 / Excel parser
-│   ├── generator/     # SQL/DDL 生成器 / SQL/DDL generator
-│   ├── analyzer/      # 依赖分析器 / Dependency analyzer
-│   ├── validator/     # SQL 验证器 / SQL validator
-│   ├── models/        # 数据模型 / Data models
-│   └── config/        # 配置管理 / Config management
+│   ├── parser/        # Excel 解析器 → IR 模型 / Excel parser to IR model
+│   ├── generator/     # 模板渲染器 / Template renderer
+│   ├── templates/     # Jinja2 模板文件 / Jinja2 template files
+│   ├── models/        # IR 数据模型 / IR data models
+│   └── cli.py         # 命令行接口 / CLI interface
+├── templates/         # Excel 模板文件 / Excel template files
 ├── tests/             # 测试用例 / Test cases
-├── examples/          # 使用示例 / Usage examples
-└── docs/              # 文档 / Documentation
+└── examples/          # 使用示例 / Usage examples
 ```
 
 ---
@@ -213,76 +190,32 @@ Documentation is being improved, please refer to the source code and examples fo
 
 ## 开发 / Development
 
-### 环境设置 / Environment Setup
-
 ```bash
 # 克隆仓库 / Clone repository
-git clone https://github.com/dataforge/dataforge-core.git
-cd dataforge-core
+git clone https://github.com/excel2everything/excel2everything.git
+cd excel2everything
 
-# 创建虚拟环境 / Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Linux/macOS
-# 或 venv\Scripts\activate  # Windows
-
-# 安装开发依赖 / Install development dependencies
+# 安装开发依赖 / Install dev dependencies
 pip install -e ".[dev]"
-```
 
-### 运行测试 / Run Tests
-
-```bash
+# 运行测试 / Run tests
 pytest
 ```
-
-### 代码格式化 / Code Formatting
-
-```bash
-black src tests
-ruff check src tests
-```
-
----
-
-## 贡献 / Contributing
-
-欢迎贡献！请查看 [贡献指南](CONTRIBUTING.md)。
-
-Contributions are welcome! Please check the [Contributing Guide](CONTRIBUTING.md).
 
 ---
 
 ## 许可证 / License
 
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
+MIT License - 详见 [LICENSE](LICENSE) 文件
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 未来规划 / Future Plans
-
-DataForge 目前为开源项目，未来计划提供：
-
-DataForge is currently an open-source project with plans to provide:
-
-- 可视化桌面应用 / Visual desktop application
-- 数据库直连执行 / Direct database execution
-- 高级规则引擎 / Advanced rule engine
-- 团队协作功能 / Team collaboration features
-
-如果你对这些功能有需求或合作意向，欢迎联系我！
-
-If you have needs for these features or collaboration interests, feel free to contact me!
+MIT License - See [LICENSE](LICENSE) file for details
 
 ---
 
 ## 联系方式 / Contact
 
-- **Issues**: [GitHub Issues](https://github.com/dataforge/dataforge-core/issues)
-- **Email / 邮件**: 欢迎通过 Issues 或邮件联系我讨论问题或合作
-  
-  Feel free to contact me via Issues or email for questions or collaboration.
+- **Issues**: [GitHub Issues](https://github.com/excel2everything/excel2everything/issues)
+- **Email**: 欢迎通过 Issues 联系 / Feel free to contact via Issues
 
 ---
 

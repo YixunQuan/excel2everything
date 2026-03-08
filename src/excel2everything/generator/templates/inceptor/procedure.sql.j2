@@ -1,0 +1,33 @@
+{# procedure.sql.j2 — 通用 ETL 存储过程模板 #}
+CREATE OR REPLACE PROCEDURE ETL_{{ model.table_name }} (
+    I_DATADATE IN INTEGER,  -- 数据日期 YYYYMMDD
+    O_ERRCODE  OUT CHAR     -- 错误代码: 0=成功, 1=失败
+)
+AS
+    V_DATEID    CHAR(8);        -- 数据日期
+    V_DATA_DT   VARCHAR2(10);   -- 数据日期 YYYY-MM-DD
+    V_SQL       VARCHAR2(4000); -- 动态SQL
+    V_COUNT     INTEGER;        -- 影响行数
+BEGIN
+    -- 日期处理
+    V_DATEID  := LPAD(TO_CHAR(I_DATADATE), 8, '0');
+    V_DATA_DT := TO_CHAR(TO_DATE(V_DATEID, 'YYYYMMDD'), 'YYYY-MM-DD');
+    O_ERRCODE := '0';
+
+    -- 清除目标表分区数据
+    V_SQL := 'ALTER TABLE {{ model.table_name }} TRUNCATE PARTITION P_' || V_DATEID;
+    EXECUTE IMMEDIATE V_SQL;
+    COMMIT;
+
+{% for item in insert_sqls %}
+    -- 步骤{{ loop.index }}: {{ item.group.name | default('') }}
+{{ item.sql | indent(4, true) }}
+    V_COUNT := SQL%ROWCOUNT;
+    COMMIT;
+{% endfor %}
+
+EXCEPTION
+    WHEN OTHERS THEN
+        O_ERRCODE := '1';
+        RAISE;
+END ETL_{{ model.table_name }};

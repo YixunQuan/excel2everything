@@ -5,12 +5,12 @@ DataForge Analyzer - 依赖分析器模块
 分析数据模型中的表依赖关系、字段依赖关系。
 
 Example:
-    >>> from dataforge.analyzer import DependencyAnalyzer
+    >>> from excel2everything.analyzer import DependencyAnalyzer
     >>> analyzer = DependencyAnalyzer()
     >>> deps = analyzer.analyze(model)
 """
 
-from dataforge.analyzer.dependency import (
+from excel2everything.analyzer.dependency import (
     analyze_table,
     analyze_all,
     build_reverse_index,

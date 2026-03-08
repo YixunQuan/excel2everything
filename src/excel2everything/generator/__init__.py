@@ -13,17 +13,17 @@ DataForge Generator - SQL/DDL 生成器模块
     - OceanBase
 
 Example:
-    >>> from dataforge.generator import SQLGenerator, DDLGenerator
+    >>> from excel2everything.generator import SQLGenerator, DDLGenerator
     >>> generator = SQLGenerator(dialect="oracle")
     >>> sql = generator.generate_procedure(model)
 """
 
-from dataforge.generator.sql import (
+from excel2everything.generator.sql import (
     SQLGenerator,
     render_insert_sql,
     render_procedure,
 )
-from dataforge.generator.ddl import (
+from excel2everything.generator.ddl import (
     DDLGenerator,
     infer_data_type,
     SUPPORTED_DIALECTS,

@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 import pandas as pd
 
-from dataforge.models import TableModel, MappingGroup, FieldMapping, CodeMappingJoin
+from excel2everything.models import TableModel, MappingGroup, FieldMapping, CodeMappingJoin
 
 
 # ============================================================
@@ -583,7 +583,7 @@ class ExcelParser:
     用于解析数据模型 Excel 文件，提取表结构、字段映射规则等信息。
     
     Example:
-        >>> from dataforge import Parser
+        >>> from excel2everything import Parser
         >>> parser = Parser(format="default")
         >>> model = parser.parse("model.xlsx")
         >>> print(f"表名: {model.table_name}")

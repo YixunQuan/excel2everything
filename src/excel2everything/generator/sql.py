@@ -8,7 +8,7 @@ import re
 from typing import Dict
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from dataforge.models import TableModel, MappingGroup
+from excel2everything.models import TableModel, MappingGroup
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 
@@ -598,7 +598,7 @@ class SQLGenerator:
     支持从数据模型生成 INSERT SQL 和存储过程。
     
     Example:
-        >>> from dataforge import Generator
+        >>> from excel2everything import Generator
         >>> generator = Generator(dialect="oracle")
         >>> sql = generator.generate_procedure(model)
     """

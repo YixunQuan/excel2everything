@@ -13,7 +13,7 @@ from typing import List, Dict, Set, Tuple, Optional
 from collections import defaultdict
 from dataclasses import dataclass, field, asdict
 
-from dataforge.models import TableModel, MappingGroup, FieldMapping
+from excel2everything.models import TableModel, MappingGroup, FieldMapping
 
 
 # ── 数据结构 ──
@@ -377,7 +377,7 @@ class DependencyAnalyzer:
     分析数据模型中的表依赖关系、字段依赖关系。
     
     Example:
-        >>> from dataforge import Analyzer
+        >>> from excel2everything import Analyzer
         >>> analyzer = Analyzer()
         >>> deps = analyzer.analyze(model)
         >>> print(f"源表列表: {deps.all_source_tables}")

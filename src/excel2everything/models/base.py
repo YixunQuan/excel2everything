@@ -8,7 +8,7 @@ DataForge Core - 数据模型定义
 都先转为这里定义的 Pydantic 模型，再交给渲染器生成 SQL。
 
 Example:
-    >>> from dataforge.models import TableModel, FieldMapping
+    >>> from excel2everything.models import TableModel, FieldMapping
     >>> field = FieldMapping(target="CUST_ID", expr="T01.CUST_ID")
     >>> print(field.target)
     CUST_ID

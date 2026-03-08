@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-DataForge Core - 命令行接口
+Excel2Everything - 命令行接口
 
 Usage:
-    dataforge --help
-    dataforge parse <excel_file> [--table <table_name>] [--output <output_dir>]
-    dataforge generate <excel_file> [--dialect <dialect>] [--output <output_dir>]
-    dataforge ddl <excel_file> [--dialect <dialect>] [--output <output_dir>]
-    dataforge analyze <excel_file> [--output <output_file>]
-    dataforge validate <sql_file>
-    dataforge info
+    excel2everything --help
+    excel2everything parse <excel_file> [--table <table_name>] [--output <output_dir>]
+    excel2everything generate <excel_file> [--dialect <dialect>] [--output <output_dir>]
+    excel2everything ddl <excel_file> [--dialect <dialect>] [--output <output_dir>]
+    excel2everything analyze <excel_file> [--output <output_file>]
+    excel2everything validate <sql_file>
+    excel2everything info
 """
 
 import argparse
@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from dataforge import (
+from excel2everything import (
     __version__,
     Parser,
     Generator,
@@ -28,7 +28,7 @@ from dataforge import (
     DDLGenerator,
     SUPPORTED_DIALECTS,
 )
-from dataforge.parser import detect_excel_format
+from excel2everything.parser import detect_excel_format
 
 
 def cmd_parse(args):
@@ -143,7 +143,7 @@ def cmd_ddl(args):
         return 1
     
     # 解析 DDL
-    from dataforge.generator.ddl import extract_ddl_from_excel
+    from excel2everything.generator.ddl import extract_ddl_from_excel
     
     tables = extract_ddl_from_excel(excel_path)
     
@@ -273,7 +273,7 @@ def cmd_validate(args):
 def cmd_info(args):
     """显示版本和配置信息"""
     print("╔════════════════════════════════════════════════════════╗")
-    print("║           DataForge Core - 企业级数据开发工具          ║")
+    print("║         Excel2Everything - Excel 转换工具              ║")
     print("╚════════════════════════════════════════════════════════╝")
     print(f"\n📦 版本: {__version__}")
     print(f"🐍 Python: {sys.version.split()[0]}")
@@ -281,34 +281,33 @@ def cmd_info(args):
     for dialect in SUPPORTED_DIALECTS:
         print(f"   • {dialect.upper()}")
     print(f"\n📖 核心功能:")
-    print("   • Excel 解析 - 解析数据模型 Excel 文件")
-    print("   • SQL 生成 - 生成 INSERT SQL 和存储过程")
-    print("   • DDL 生成 - 生成建表语句")
-    print("   • 依赖分析 - 分析表级和字段级依赖关系")
-    print("   • SQL 验证 - 语法检查和质量验证")
+    print("   • Excel 解析 → IR 模型")
+    print("   • 模板渲染 → SQL / DDL / 代码")
+    print("   • 依赖分析")
+    print("   • SQL 验证")
     print(f"\n💡 使用示例:")
-    print("   dataforge parse model.xlsx --output ./output")
-    print("   dataforge generate model.xlsx --dialect oracle")
-    print("   dataforge ddl model.xlsx --dialect mysql")
-    print("   dataforge analyze model.xlsx")
-    print("   dataforge validate procedure.sql")
+    print("   excel2everything parse model.xlsx --output ./output")
+    print("   excel2everything generate model.xlsx --dialect oracle")
+    print("   excel2everything ddl model.xlsx --dialect mysql")
+    print("   excel2everything analyze model.xlsx")
+    print("   excel2everything validate procedure.sql")
     return 0
 
 
 def main():
     """CLI 主入口"""
     parser = argparse.ArgumentParser(
-        prog='dataforge',
-        description='DataForge Core - 企业级数据开发工具链核心引擎',
+        prog='excel2everything',
+        description='Excel2Everything - 解析 Excel，模板转换，生成任意格式',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
-  dataforge info                           显示版本和帮助信息
-  dataforge parse model.xlsx               解析 Excel 文件
-  dataforge generate model.xlsx -d oracle  生成 Oracle 存储过程
-  dataforge ddl model.xlsx -d mysql        生成 MySQL DDL
-  dataforge analyze model.xlsx             分析依赖关系
-  dataforge validate procedure.sql         验证 SQL 文件
+  excel2everything info                           显示版本和帮助信息
+  excel2everything parse model.xlsx               解析 Excel 文件
+  excel2everything generate model.xlsx -d oracle  生成 Oracle 存储过程
+  excel2everything ddl model.xlsx -d mysql        生成 MySQL DDL
+  excel2everything analyze model.xlsx             分析依赖关系
+  excel2everything validate procedure.sql         验证 SQL 文件
         """
     )
     

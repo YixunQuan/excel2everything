@@ -13,7 +13,7 @@ import re
 from typing import Tuple, Optional, Dict, Any, List, Callable
 from dataclasses import dataclass
 
-from dataforge.config.models import MappingRuleConfig, MappingRule
+from excel2everything.config.models import MappingRuleConfig, MappingRule
 
 
 @dataclass

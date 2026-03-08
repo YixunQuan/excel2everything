@@ -5,7 +5,7 @@ DataForge Core - 基础使用示例
 展示如何使用 DataForge Core 进行数据模型解析和 SQL 生成。
 """
 
-from dataforge import (
+from excel2everything import (
     Parser,
     Generator,
     Validator,
@@ -177,7 +177,7 @@ def example_generate_ddl():
     print("示例 5：生成 DDL")
     print("=" * 50)
     
-    from dataforge.generator import SUPPORTED_DIALECTS
+    from excel2everything.generator import SUPPORTED_DIALECTS
     
     print(f"支持的数据库方言: {SUPPORTED_DIALECTS}")
     
