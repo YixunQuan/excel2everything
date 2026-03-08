@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/excel2everything/excel2everything/blob/main/LICENSE">
+  <a href="https://github.com/YixunQuan/excel2everything/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
   </a>
   <a href="https://www.python.org/downloads/">
@@ -53,7 +53,7 @@ Excel 文件
 
 ```bash
 # 克隆仓库 / Clone repository
-git clone https://github.com/excel2everything/excel2everything.git
+git clone https://github.com/YixunQuan/excel2everything.git
 cd excel2everything
 
 # 安装 / Install
@@ -165,7 +165,7 @@ class {{ model.table_name }}:
 
 ```
 excel2everything/
-├── src/dataforge/
+├── src/excel2everything/
 │   ├── parser/        # Excel 解析器 → IR 模型 / Excel parser to IR model
 │   ├── generator/     # 模板渲染器 / Template renderer
 │   ├── templates/     # Jinja2 模板文件 / Jinja2 template files
@@ -192,7 +192,7 @@ Documentation is being improved, please refer to the source code and examples fo
 
 ```bash
 # 克隆仓库 / Clone repository
-git clone https://github.com/excel2everything/excel2everything.git
+git clone https://github.com/YixunQuan/excel2everything.git
 cd excel2everything
 
 # 安装开发依赖 / Install dev dependencies
@@ -214,7 +214,7 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ## 联系方式 / Contact
 
-- **Issues**: [GitHub Issues](https://github.com/excel2everything/excel2everything/issues)
+- **Issues**: [GitHub Issues](https://github.com/YixunQuan/excel2everything/issues)
 - **Email**: 欢迎通过 Issues 联系 / Feel free to contact via Issues
 
 ---

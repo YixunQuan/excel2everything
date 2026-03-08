@@ -73,10 +73,10 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/excel2everything/excel2everything"
-Documentation = "https://github.com/excel2everything/excel2everything#readme"
-Repository = "https://github.com/excel2everything/excel2everything"
-Issues = "https://github.com/excel2everything/excel2everything/issues"
+Homepage = "https://github.com/YixunQuan/excel2everything"
+Documentation = "https://github.com/YixunQuan/excel2everything#readme"
+Repository = "https://github.com/YixunQuan/excel2everything"
+Issues = "https://github.com/YixunQuan/excel2everything/issues"
 
 [project.scripts]
 excel2everything = "excel2everything.cli:main"
